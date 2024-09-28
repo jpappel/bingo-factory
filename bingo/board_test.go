@@ -12,11 +12,11 @@ func TestRows(t *testing.T) {
 
 	testGame := func(size int, length int) {
 
-		g.Checked = make([]bool, size)
+		g.Board = make([]bingo.Tile, size)
 
-		testGroup := func(name string, iter iter.Seq[[]bool]) {
+		testGroup := func(name string, iter iter.Seq[[]bingo.Tile]) {
 			for i := range size {
-				g.Checked[i] = false
+				g.Board[i].Checked = false
 			}
 			for group := range iter {
 				if len(group) != length {
@@ -25,13 +25,13 @@ func TestRows(t *testing.T) {
 				}
 
 				for i := range length {
-					if group[i] != false {
+					if group[i].Checked != false {
 						t.Errorf("Incorrect value in %s!\n", name)
 					}
 				}
 			}
 			for i := range size {
-				g.Checked[i] = true
+				g.Board[i].Checked = true
 			}
 			for group := range iter {
 				if len(group) != length {
@@ -39,16 +39,16 @@ func TestRows(t *testing.T) {
 				}
 
 				for i := range length {
-					if group[i] != true {
+					if group[i].Checked != true {
 						t.Errorf("Incorrect value in %s!\n", name)
 					}
 				}
 			}
 		}
 
-		testGroup("row", g.Rows(length))
-		testGroup("col", g.Cols(length))
-		testGroup("diag", g.Diags(length))
+		testGroup("row", g.Rows())
+		testGroup("col", g.Cols())
+		testGroup("diag", g.Diags())
 
 	}
 

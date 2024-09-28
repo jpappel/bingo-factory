@@ -17,8 +17,7 @@ type RandomGenerator struct {
 func (g RandomGenerator) New(size int, length int) *Game {
 	g.picker.Reset()
 
-	board := make([]string, 0, size)
-	checked := make([]bool, size)
+	board := make([]Tile, 0, size)
 
 	for _, tile := range g.picker.Iter(size) {
 		board = append(board, tile)
@@ -26,7 +25,6 @@ func (g RandomGenerator) New(size int, length int) *Game {
 
 	game := new(Game)
 	game.Board = board
-	game.Checked = checked
 	game.Length = length
 
 	return game

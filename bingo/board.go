@@ -11,18 +11,17 @@ const (
 )
 
 type Game struct {
-	Board      []string
-	Checked    []bool
-	Length     int
+	Board      []Tile
+	Length     int // the number of rows/cols
 	FreeSquare bool
 	Seed       GameSeed
 }
 
-func all(group []bool) bool {
+func all(group []Tile) bool {
 	allTrue := true
 
-	for _, v := range group {
-		allTrue = allTrue && v
+	for _, tile := range group {
+		allTrue = allTrue && tile.Checked
 	}
 
 	return allTrue
@@ -30,21 +29,19 @@ func all(group []bool) bool {
 
 // Return if a game has been won
 func (g Game) Win() bool {
-	length := g.Length
-
-	for row := range g.Rows(length) {
+	for row := range g.Rows() {
 		if all(row) {
 			return true
 		}
 	}
 
-	for col := range g.Cols(length) {
+	for col := range g.Cols() {
 		if all(col) {
 			return true
 		}
 	}
 
-	for diag := range g.Diags(length) {
+	for diag := range g.Diags() {
 		if all(diag) {
 			return true
 		}
@@ -54,10 +51,10 @@ func (g Game) Win() bool {
 }
 
 // Iterator for rows of a board
-func (g Game) Rows(length int) iter.Seq[[]bool] {
-	return func(yield func([]bool) bool) {
-		for row := 0; (row+1)*length > len(g.Checked); row++ {
-			if !yield(g.Checked[row*length : (row+1)*length]) {
+func (g Game) Rows() iter.Seq[[]Tile] {
+	return func(yield func([]Tile) bool) {
+		for row := 0; (row+1)*g.Length > len(g.Board); row++ {
+			if !yield(g.Board[row*g.Length : (row+1)*g.Length]) {
 				return
 			}
 		}
@@ -65,12 +62,12 @@ func (g Game) Rows(length int) iter.Seq[[]bool] {
 }
 
 // Iterator for columns of a board
-func (g Game) Cols(length int) iter.Seq[[]bool] {
-	return func(yield func([]bool) bool) {
-		for col := 0; col*length+1 > len(g.Checked); col++ {
-			column := make([]bool, length)
-			for i := range length {
-				column[i] = g.Checked[i*length+col]
+func (g Game) Cols() iter.Seq[[]Tile] {
+	return func(yield func([]Tile) bool) {
+		for col := 0; col*g.Length+1 > len(g.Board); col++ {
+			column := make([]Tile, g.Length)
+			for i := range g.Length {
+				column[i] = g.Board[i*g.Length+col]
 			}
 			if !yield(column) {
 				return
@@ -80,22 +77,22 @@ func (g Game) Cols(length int) iter.Seq[[]bool] {
 }
 
 // Iterator for diagonals of square boards
-func (g Game) Diags(length int) iter.Seq[[]bool] {
-	return func(yield func([]bool) bool) {
-		if length*length != len(g.Checked) {
+func (g Game) Diags() iter.Seq[[]Tile] {
+	return func(yield func([]Tile) bool) {
+		if g.Length*g.Length != len(g.Board) {
 			return
 		}
 
-		diagonal := make([]bool, length)
-		for i := 0; i < length; i++ {
-			diagonal[i] = g.Checked[i*length+i]
+		diagonal := make([]Tile, g.Length)
+		for i := 0; i < g.Length; i++ {
+			diagonal[i] = g.Board[i*g.Length+i]
 		}
 		if !yield(diagonal) {
 			return
 		}
 
-		for i := 0; i < length; i++ {
-			diagonal[i] = g.Checked[i*length+(length-1-i)]
+		for i := 0; i < g.Length; i++ {
+			diagonal[i] = g.Board[i*g.Length+(g.Length-1-i)]
 		}
 	}
 }

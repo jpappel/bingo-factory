@@ -6,6 +6,12 @@ import (
 	"slices"
 )
 
+type Tile struct {
+	Text      string
+	Checked   bool
+	Checkable bool
+}
+
 type TilePool map[string][]string
 
 func (pool TilePool) All() iter.Seq[string] {
@@ -21,9 +27,9 @@ func (pool TilePool) All() iter.Seq[string] {
 }
 
 type TilePicker interface {
-	All() iter.Seq[string]              // provides an iterator over an entire TilePool
-	Iter(int) iter.Seq2[string, string] // provides an iterator over n elements of a TilePool
-	Reset()                             // reset the internal state of a TilePicker
+	All() iter.Seq[string]            // provides an iterator over an entire TilePool
+	Iter(int) iter.Seq2[string, Tile] // provides an iterator over n elements of a TilePool
+	Reset()                           // reset the internal state of a TilePicker
 }
 
 type RandomTilePicker struct {
@@ -61,8 +67,8 @@ func (tp RandomTilePicker) All() iter.Seq[string] {
 }
 
 // Iterator over a TilePool by choosing one tile per tag until pool is exhausted or size tiles have been yielded
-func (tp RandomTilePicker) Iter(size int) iter.Seq2[string, string] {
-	return func(yield func(string, string) bool) {
+func (tp RandomTilePicker) Iter(size int) iter.Seq2[string, Tile] {
+	return func(yield func(string, Tile) bool) {
 		if len(tp.tilePool) == 0 {
 			return
 		}
@@ -86,7 +92,8 @@ func (tp RandomTilePicker) Iter(size int) iter.Seq2[string, string] {
 				continue
 			}
 
-			tile := list[tp.rand.Intn(len(list))]
+			text := list[tp.rand.Intn(len(list))]
+			tile := Tile{Text: text}
 			if !yield(tag, tile) {
 				return
 			}
